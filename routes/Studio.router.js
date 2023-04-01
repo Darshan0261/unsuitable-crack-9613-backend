@@ -96,7 +96,7 @@ studioRouter.post('/login', async (req, res) => {
                 return res.status(401).send({ message: 'Wrong Credentials' });
             }
             const token = jwt.sign({ name: user.name, role: user.role, id: user._id }, process.env.KEY);
-            res.send({ message: 'Login Sucessfull', token })
+            res.send({ message: 'Login Sucessfull', token, user: { name: user.name, id: user._id } })
         });
     } catch (error) {
         return res.status(500).send({ message: 'Something went wrong' });
