@@ -9,13 +9,16 @@ const { authentication } = require('../middlewares/authentication.middleware');
 const { BlacklistModel } = require('../models/Blacklist.model');
 const { userAuth } = require('../middlewares/authorization.middleware');
 const { AppointmentModel } = require('../models/Appoinment.model');
+const { default: mongoose } = require('mongoose');
 
 const userRouter = express.Router();
 
 userRouter.get('/data/:id', async (req, res) => {
-    let { id } = req.params;
+    let id = req.params['id'];
+    const ObjectId = mongoose.Types.ObjectId;
     try {
-        const user = await UserModel.aggregate([{ $match: { _id: id } }, { $project: { password: 0 } }])
+        const _id = new ObjectId(id)
+        const user = await UserModel.aggregate([{ $match: { _id: _id } }, { $project: { password: 0 } }])
         if(user.length == 0) {
             return res.status(404).send({message: 'User not found'})
         }
