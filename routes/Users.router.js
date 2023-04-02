@@ -12,6 +12,19 @@ const { AppointmentModel } = require('../models/Appoinment.model');
 
 const userRouter = express.Router();
 
+userRouter.get('/data/:id', async (req, res) => {
+    let { id } = req.params;
+    try {
+        const user = await UserModel.aggregate([{ $match: { _id: id } }, { $project: { password: 0 } }])
+        if(user.length == 0) {
+            return res.status(404).send({message: 'User not found'})
+        }
+        return res.send(user[0]);
+    } catch (error) {
+        return res.status(501).send({message: error.message})
+    }
+})
+
 userRouter.post('/signup', async (req, res) => {
     const { name, mobile, password } = req.body;
     try {
@@ -53,7 +66,7 @@ userRouter.post('/login', async (req, res) => {
                 return res.status(401).send({ message: 'Wrong Credentials' });
             }
             const token = jwt.sign({ name: user.name, role: user.role, id: user._id }, process.env.KEY);
-            res.send({ message: 'Login Sucessfull', token, user: { name: user.name, id: user._id }})
+            res.send({ message: 'Login Sucessfull', token, user: { name: user.name, id: user._id } })
         });
     } catch (error) {
         return res.status(500).send({ message: error.message });
@@ -135,15 +148,15 @@ userRouter.delete('/delete/:id', authentication, userAuth, async (req, res) => {
         return res.status(401).send({ message: 'Access Denied' });
     }
     try {
-        const appointments = await AppointmentModel.find({user_id: user_id});
+        const appointments = await AppointmentModel.find({ user_id: user_id });
         appointments.forEach(app => {
             app.status = 'Rejected';
         })
         await appointments.save();
-        await UserModel.findOneAndDelete({_id: user_id});
-        return res.send({message: 'Account Deleted Sucessfully'})
+        await UserModel.findOneAndDelete({ _id: user_id });
+        return res.send({ message: 'Account Deleted Sucessfully' })
     } catch (error) {
-        return res.status(501).send({message: error.message})       
+        return res.status(501).send({ message: error.message })
     }
 })
 
